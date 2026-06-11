@@ -36,9 +36,7 @@ class _HomeScreenState extends State<HomeScreen>
     _tabCtrl = TabController(length: _categories.length, vsync: this);
     _tabCtrl.addListener(() {
       if (!_tabCtrl.indexIsChanging) {
-        context
-            .read<AzkarProvider>()
-            .loadCategory(_categories[_tabCtrl.index]);
+        context.read<AzkarProvider>().loadCategory(_categories[_tabCtrl.index]);
       }
     });
 
@@ -55,7 +53,11 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final pages = [_AzkarPage(tabCtrl: _tabCtrl, categories: _categories), const StatsScreen(), const SettingsScreen()];
+    final pages = [
+      _AzkarPage(tabCtrl: _tabCtrl, categories: _categories),
+      const StatsScreen(),
+      const SettingsScreen()
+    ];
 
     return Scaffold(
       body: pages[_navIndex],
@@ -135,8 +137,7 @@ class _NavItem extends StatelessWidget {
               style: GoogleFonts.tajawal(
                   fontSize: 11,
                   color: color,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.normal)),
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.normal)),
         ]),
       ),
     );
@@ -163,26 +164,33 @@ class _AzkarPage extends StatelessWidget {
           Expanded(
             child: TabBarView(
               controller: tabCtrl,
-              children: categories
-                  .map((_) => _AzkarList(prov: prov))
-                  .toList(),
+              children: categories.map((_) => _AzkarList(prov: prov)).toList(),
             ),
           ),
         ]),
       ),
-      floatingActionButton: prov.activeCategory == DhikrCategory.custom
-          ? FloatingActionButton(
-              backgroundColor: AppTheme.accent,
-              foregroundColor: AppTheme.bg,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) =>
-                        AddDhikrScreen(initialCategory: DhikrCategory.custom)),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppTheme.accent,
+        foregroundColor: AppTheme.bg,
+        onPressed: () async {
+          final addedCategory = await Navigator.push<String>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddDhikrScreen(
+                initialCategory: prov.activeCategory,
               ),
-              child: const Icon(Icons.add_rounded),
-            )
-          : null,
+            ),
+          );
+          if (addedCategory == null || !context.mounted) return;
+
+          final tabIndex = categories.indexOf(addedCategory);
+          if (tabIndex != -1) {
+            tabCtrl.animateTo(tabIndex);
+          }
+          await context.read<AzkarProvider>().loadCategory(addedCategory);
+        },
+        child: const Icon(Icons.add_rounded),
+      ),
     );
   }
 
@@ -196,7 +204,8 @@ class _AzkarPage extends StatelessWidget {
           children: [
             Row(children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppTheme.accent.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -234,13 +243,14 @@ class _AzkarPage extends StatelessWidget {
         // Progress bar
         Column(children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(
-                '${prov.completedCount} / ${prov.totalCount} ذكر',
+            Text('${prov.completedCount} / ${prov.totalCount} ذكر',
                 style: GoogleFonts.tajawal(
                     color: AppTheme.textSecondary, fontSize: 12)),
             Text('${(prov.completionPercent * 100).toStringAsFixed(0)}%',
                 style: GoogleFonts.tajawal(
-                    color: catColor, fontWeight: FontWeight.w700, fontSize: 12)),
+                    color: catColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
           ]),
           const SizedBox(height: 6),
           ClipRRect(
@@ -254,7 +264,8 @@ class _AzkarPage extends StatelessWidget {
           ),
         ]),
         if (prov.sessionComplete)
-          _SessionDoneBanner(category: prov.activeCategory, onReset: prov.resetSession),
+          _SessionDoneBanner(
+              category: prov.activeCategory, onReset: prov.resetSession),
       ]),
     );
   }
@@ -263,8 +274,8 @@ class _AzkarPage extends StatelessWidget {
     final labels = {
       DhikrCategory.morning: ('الصباح', '🌅'),
       DhikrCategory.evening: ('المساء', '🌆'),
-      DhikrCategory.sleep:   ('النوم',  '🌙'),
-      DhikrCategory.custom:  ('مخصصة',  '✨'),
+      DhikrCategory.sleep: ('النوم', '🌙'),
+      DhikrCategory.custom: ('مخصصة', '✨'),
     };
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -317,12 +328,12 @@ class _AzkarList extends StatelessWidget {
               size: 56, color: AppTheme.textHint),
           const SizedBox(height: 12),
           Text('لا توجد أذكار بعد',
-              style: GoogleFonts.tajawal(
-                  color: AppTheme.textHint, fontSize: 16)),
+              style:
+                  GoogleFonts.tajawal(color: AppTheme.textHint, fontSize: 16)),
           const SizedBox(height: 8),
           Text('اضغط + لإضافة ذكر مخصص',
-              style: GoogleFonts.tajawal(
-                  color: AppTheme.textHint, fontSize: 13)),
+              style:
+                  GoogleFonts.tajawal(color: AppTheme.textHint, fontSize: 13)),
         ]),
       );
     }
@@ -376,9 +387,7 @@ class _SessionDoneBanner extends StatelessWidget {
           Text('ما شاء الله! أتممت أذكارك 🎉',
               textAlign: TextAlign.right,
               style: GoogleFonts.tajawal(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: color)),
+                  fontSize: 14, fontWeight: FontWeight.w700, color: color)),
           Text('جعلها الله في ميزان حسناتك',
               textAlign: TextAlign.right,
               style: GoogleFonts.tajawal(

@@ -73,9 +73,8 @@ class _DhikrCardState extends State<DhikrCard>
         curve: Curves.easeOut,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: done
-              ? AppTheme.primaryDark.withOpacity(0.9)
-              : AppTheme.surface,
+          color:
+              done ? AppTheme.primaryDark.withOpacity(0.9) : AppTheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: done ? catColor.withOpacity(0.6) : AppTheme.divider,
@@ -96,7 +95,8 @@ class _DhikrCardState extends State<DhikrCard>
           children: [
             // ── Progress bar ──────────────────────────────
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
               child: LinearProgressIndicator(
                 value: percent.toDouble(),
                 backgroundColor: AppTheme.surfaceLight,
@@ -202,7 +202,7 @@ class _DhikrCardState extends State<DhikrCard>
                   Row(
                     children: [
                       // Undo
-                      if (current > 0 && !done)
+                      if (current > 0)
                         _SmallAction(
                           icon: Icons.undo_rounded,
                           onTap: () {
@@ -227,18 +227,22 @@ class _DhikrCardState extends State<DhikrCard>
                         },
                       ),
 
-                      // Edit (custom only)
-                      if (dhikr.isCustom)
-                        _SmallAction(
-                          icon: Icons.edit_rounded,
-                          onTap: () => _showEditDialog(context, prov),
-                        ),
+                      _SmallAction(
+                        icon: Icons.edit_rounded,
+                        onTap: () => _showEditDialog(context, prov),
+                      ),
 
                       const Spacer(),
 
                       // Counter chip / Done badge
                       if (done)
-                        _DoneBadge(color: catColor)
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            prov.undo(dhikr);
+                          },
+                          child: _DoneBadge(color: catColor),
+                        )
                       else
                         GestureDetector(
                           onTap: () => _onTap(prov),
@@ -280,15 +284,17 @@ class _DhikrCardState extends State<DhikrCard>
         countCtrl: countCtrl,
         onSave: () async {
           final count = int.tryParse(countCtrl.text) ?? 1;
-          await prov.updateCustomDhikr(widget.dhikr.copyWith(
+          await prov.updateCustomDhikr(Dhikr(
+            id: widget.dhikr.id,
+            category: widget.dhikr.category,
             text: textCtrl.text.trim(),
-            source: sourceCtrl.text.trim().isEmpty
-                ? null
-                : sourceCtrl.text.trim(),
-            virtue: virtueCtrl.text.trim().isEmpty
-                ? null
-                : virtueCtrl.text.trim(),
+            source:
+                sourceCtrl.text.trim().isEmpty ? null : sourceCtrl.text.trim(),
+            virtue:
+                virtueCtrl.text.trim().isEmpty ? null : virtueCtrl.text.trim(),
             repeatCount: count.clamp(1, 9999),
+            isCustom: widget.dhikr.isCustom,
+            sortOrder: widget.dhikr.sortOrder,
           ));
           if (ctx.mounted) Navigator.pop(ctx);
         },
@@ -390,9 +396,7 @@ class _DoneBadge extends StatelessWidget {
             const SizedBox(width: 6),
             Text('تمّ',
                 style: GoogleFonts.tajawal(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: color)),
+                    fontSize: 14, fontWeight: FontWeight.w700, color: color)),
           ],
         ),
       );
@@ -417,9 +421,12 @@ class _EditSheet extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 20, right: 20, top: 24),
+          left: 20,
+          right: 20,
+          top: 24),
       child: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text('تعديل الذكر',
               textAlign: TextAlign.center,
               style: GoogleFonts.tajawal(
@@ -433,8 +440,7 @@ class _EditSheet extends StatelessWidget {
           const SizedBox(height: 12),
           _field('الفضل (اختياري)', virtueCtrl, maxLines: 3),
           const SizedBox(height: 12),
-          _field('عدد التكرار', countCtrl,
-              keyboardType: TextInputType.number),
+          _field('عدد التكرار', countCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 24),
           Row(children: [
             Expanded(
@@ -461,8 +467,7 @@ class _EditSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 14)),
                 child: Text('حفظ',
-                    style: GoogleFonts.tajawal(
-                        fontWeight: FontWeight.w700)),
+                    style: GoogleFonts.tajawal(fontWeight: FontWeight.w700)),
               ),
             ),
           ]),

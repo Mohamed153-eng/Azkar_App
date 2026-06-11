@@ -17,10 +17,10 @@ class AddDhikrScreen extends StatefulWidget {
 
 class _AddDhikrScreenState extends State<AddDhikrScreen> {
   late String _category;
-  final _textCtrl   = TextEditingController();
+  final _textCtrl = TextEditingController();
   final _sourceCtrl = TextEditingController();
   final _virtueCtrl = TextEditingController();
-  final _countCtrl  = TextEditingController(text: '1');
+  final _countCtrl = TextEditingController(text: '1');
   bool _saving = false;
 
   @override
@@ -31,8 +31,10 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
 
   @override
   void dispose() {
-    _textCtrl.dispose(); _sourceCtrl.dispose();
-    _virtueCtrl.dispose(); _countCtrl.dispose();
+    _textCtrl.dispose();
+    _sourceCtrl.dispose();
+    _virtueCtrl.dispose();
+    _countCtrl.dispose();
     super.dispose();
   }
 
@@ -44,13 +46,15 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
     setState(() => _saving = true);
     final count = int.tryParse(_countCtrl.text) ?? 1;
     await context.read<AzkarProvider>().addCustomDhikr(
-      text:        _textCtrl.text.trim(),
-      category:    _category,
-      source:      _sourceCtrl.text.trim().isEmpty ? null : _sourceCtrl.text.trim(),
-      virtue:      _virtueCtrl.text.trim().isEmpty ? null : _virtueCtrl.text.trim(),
-      repeatCount: count.clamp(1, 9999),
-    );
-    if (mounted) Navigator.pop(context);
+          text: _textCtrl.text.trim(),
+          category: _category,
+          source:
+              _sourceCtrl.text.trim().isEmpty ? null : _sourceCtrl.text.trim(),
+          virtue:
+              _virtueCtrl.text.trim().isEmpty ? null : _virtueCtrl.text.trim(),
+          repeatCount: count.clamp(1, 9999),
+        );
+    if (mounted) Navigator.pop(context, _category);
   }
 
   void _snack(String msg) {
@@ -65,13 +69,14 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
     return Scaffold(
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
-        title: const Text('إضافة ذكر مخصص'),
+        title: const Text('إضافة ذكر'),
         backgroundColor: AppTheme.bg,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
             20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _label('الفئة'),
           const SizedBox(height: 8),
           _CategoryPicker(
@@ -81,7 +86,8 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
           const SizedBox(height: 20),
           _label('نص الذكر *'),
           const SizedBox(height: 8),
-          _field(_textCtrl, maxLines: 6, hint: 'اكتب نص الذكر أو الدعاء هنا...'),
+          _field(_textCtrl,
+              maxLines: 6, hint: 'اكتب نص الذكر أو الدعاء هنا...'),
           const SizedBox(height: 16),
           _label('المصدر (اختياري)'),
           const SizedBox(height: 8),
@@ -89,8 +95,8 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
           const SizedBox(height: 16),
           _label('فضل الذكر (اختياري)'),
           const SizedBox(height: 8),
-          _field(_virtueCtrl, maxLines: 3,
-              hint: 'اكتب ثواب أو فضل قراءة هذا الذكر...'),
+          _field(_virtueCtrl,
+              maxLines: 3, hint: 'اكتب ثواب أو فضل قراءة هذا الذكر...'),
           const SizedBox(height: 16),
           _label('عدد التكرار'),
           const SizedBox(height: 8),
@@ -107,7 +113,8 @@ class _AddDhikrScreenState extends State<AddDhikrScreen> {
             ),
             child: _saving
                 ? const SizedBox(
-                    height: 20, width: 20,
+                    height: 20,
+                    width: 20,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: AppTheme.textPrimary))
                 : Text('حفظ الذكر',
@@ -155,8 +162,8 @@ class _CategoryPicker extends StatelessWidget {
     final cats = [
       (DhikrCategory.morning, 'الصباح', '🌅'),
       (DhikrCategory.evening, 'المساء', '🌆'),
-      (DhikrCategory.sleep,   'النوم',  '🌙'),
-      (DhikrCategory.custom,  'مخصصة',  '✨'),
+      (DhikrCategory.sleep, 'النوم', '🌙'),
+      (DhikrCategory.custom, 'مخصصة', '✨'),
     ];
     return Row(
       children: cats.reversed.map((c) {
@@ -170,14 +177,12 @@ class _CategoryPicker extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? color.withOpacity(0.2)
-                    : AppTheme.surfaceLight,
+                color:
+                    isSelected ? color.withOpacity(0.2) : AppTheme.surfaceLight,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected
-                      ? color.withOpacity(0.6)
-                      : Colors.transparent,
+                  color:
+                      isSelected ? color.withOpacity(0.6) : Colors.transparent,
                   width: 1.5,
                 ),
               ),
@@ -188,9 +193,8 @@ class _CategoryPicker extends StatelessWidget {
                     style: GoogleFonts.tajawal(
                         fontSize: 11,
                         color: isSelected ? color : AppTheme.textHint,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.normal)),
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.normal)),
               ]),
             ),
           ),
